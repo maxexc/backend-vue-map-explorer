@@ -40,7 +40,6 @@ The project leverages a diverse set of technologies and libraries to ensure a ro
 - **cors** – Handling Cross-Origin Resource Sharing.
 - **morgan** – HTTP request logging.
 - **cookie-parser** – Parsing cookies.
-- **express-validator** – Request data validation.
 - **axios** – Promise-based HTTP client.
 - **bcryptjs** – Password hashing.
 - **jsonwebtoken** – Authentication token management.
