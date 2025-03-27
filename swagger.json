@@ -11,12 +11,12 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3001",
-      "description": "Local server (dev)"
+      "url": "https://backend-vue-map-explorer.onrender.com",
+      "description": "Production server"
     },
     {
-      "url": "https://my-app-name.onrender.com",
-      "description": "Production (Render)"
+      "url": "http://localhost:3001",
+      "description": "Local server (dev)"
     }
   ],
   
