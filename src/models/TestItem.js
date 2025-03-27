@@ -15,7 +15,7 @@ function sayYes(userName) {
     return `This Backend is from "${userName}"`
 }
 
-// Название коллекции в базе будет "testitems" (по умолчанию mongoose берёт нижний регистр + s)
-module.exports = model('TestItem', testItemSchema);
+const TestItem = model('TestItem', testItemSchema);
+// module.exports = model('TestItem', testItemSchema);
 
-module.exports = { userName, sayYes };
+module.exports = { TestItem, userName, sayYes, };

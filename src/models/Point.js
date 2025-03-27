@@ -17,7 +17,16 @@ const pointSchema = new Schema(
             },
         },
         owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        isPublic: { type: Boolean, default: false }
+        isPublic: { type: Boolean, default: false },
+        type: { type: String, default: 'Point' },
+        rating: { type: Number, min: 0, max: 5, default: 0 },
+        feedbacks: [
+            {
+                user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+                userName: { type: String, required: true },
+                comment: { type: String, required: true },
+            }
+        ]
     },
     {
         versionKey: false,
