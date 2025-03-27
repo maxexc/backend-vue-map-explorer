@@ -11,14 +11,14 @@ async function deletePoint(req, res, next) {
         const { id } = req.params;
         const point = await Point.findById(id);
         if (!point) {
-            throw new HttpError(404, 'Point not found');
+            return res.status(404).json({ message: 'Point not found' });
         }
         if (point.owner.toString() !== user._id.toString()) {
-            throw new HttpError(403, 'You cannot delete this point');
+            throw new HttpError(403, 'You cannot delete this point. Non-owner');
         }
 
         await Point.findByIdAndDelete(id);
-        res.json({ message: 'Point deleted successfully' });
+        res.status(200).json({ message: 'Point deleted successfully' });
     } catch (error) {
         next(error);
     }

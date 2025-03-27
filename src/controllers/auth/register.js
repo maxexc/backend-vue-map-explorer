@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User.js');
-// const { HttpError } = require('../../utils/HttpError.js');
 
 const { JWT_SECRET = 'default_jwt_secret', EXPIRES_TIME } = process.env;
 
@@ -14,7 +13,7 @@ async function register(req, res, next) {
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(409).json({ message: `Email ${email} in use` });
+            return res.status(409).json({ message: `Email ${email} is already in use` });
         }
 
         // Hashing the password

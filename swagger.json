@@ -1,0 +1,660 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Vue Map Explorer API",
+    "description": "REST API documentation for the VueMap-Explorer application.",
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "VueMap-Explorer",
+    "url": "https://vue-map-explorer.vercel.app/"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local server (dev)"
+    },
+    {
+      "url": "https://my-app-name.onrender.com",
+      "description": "Production (Render)"
+    }
+  ],
+  
+  "tags": [
+    { "name": "User", "description": "Authorization endpoints" },
+    { "name": "Points", "description": "Points endpoints" },
+    { "name": "Routes", "description": "Routes endpoints" }
+  ],
+  "paths": {
+    "/user/register": {
+      "post": {
+        "operationId": "registerUser",
+        "tags": ["User"],
+        "summary": "User registration",
+        "requestBody": {
+          "description": "Registration's object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegistrationRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+          "description": "User was successfully created. A refresh token is set in an HttpOnly cookie. Example cookie: 'Set-Cookie: refreshToken=eyJhbGciOiJI...; Path=/; HttpOnly;'",
+          "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RegistrationResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid data",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationError" } } }
+          },
+          "409": {
+            "description": "User already exists",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterError" } } }
+          },
+          "500": {
+            "description": "Server error while creating user",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "post": {
+        "tags": ["User"],
+        "summary": "User authentication",
+        "requestBody": {
+          "description": "User login (email and password)",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login. Returns a JWT token and user information. A refresh token is set in an HttpOnly cookie. Example cookie: 'Set-Cookie: refreshToken=eyJhbGciOiJI...; Path=/; HttpOnly;'",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid data",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationError" } } }
+          },
+          "401": {
+            "description": "Email doesn't exist / Password is wrong",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      }
+    },
+    "/user/logout": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Logout",
+        "description": "Log out. Requires a valid JWT or refresh token in cookies.",
+        "security": [ { "bearerAuth": [] } ],
+        "responses": {
+          "204": {
+            "description": "Logout successful, tokens invalidated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LogoutResponse" } } }
+          },
+          "401": {
+            "description": "Not authorized. Requires a valid JWT or refresh token in cookies.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      }
+    },    
+    "/user/me": {
+        "get": {
+            "tags": ["User"],
+        "summary": "User info",
+        "description": "Returns the user profile based on the JSON Web Token (JWT).",
+        "security": [ { "bearerAuth": [] } ],
+        "responses": {
+          "200": {
+            "description": "Current user data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserInfo" }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized. Requires a valid JWT or refresh token in cookies.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      }
+    },
+    "/user/refresh": {
+      "post": {
+        "tags": ["User"],
+        "summary": "Refresh access token",
+        "description": "Generates a new access-token based on a valid refresh-token (sent via HttpOnly Cookie).",
+        "responses": {
+          "200": {
+            "description": "JWT token successfully refreshed. A new refresh token is set in an HttpOnly cookie to ensure continuous authentication. Example cookie: 'Set-Cookie: refreshToken=eyJhbGciOiJI...; Path=/; HttpOnly;'",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LoginResponse" }                
+              }
+            }
+          },
+          "401": {
+            "description": "Refresh token not found or invalid",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RefreshError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      }
+    },
+    "/points": {
+      "get": {
+        "tags": ["Points"],
+        "summary": "Get all points",
+        "security": [ { "bearerAuth": [] } ],
+        "responses": {
+          "200": {
+            "description": "List of points was successfully received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Point" }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Points"],
+        "summary": "Add point",
+        "description": "Adds a new point to the map. Authorization is required.",
+        "security": [ { "bearerAuth": [] } ],
+        "requestBody": {
+          "description": "Add point data",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddPointRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Point created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PointResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid point data",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvalidPointDataError" } } }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Points"],
+        "summary": "Update point",
+        "security": [ { "bearerAuth": [] } ],        
+        "requestBody": {
+          "description": "New data point",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdatePointRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Point updated",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdatedPointResponse" } } }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NoIdProvidedError" } } }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "404": {
+            "description": "Point not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PointNotFoundError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      }
+    },
+    "/points/{id}": {
+      "get": {
+        "tags": ["Points"],
+        "summary": "Get point by ID",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Point ID (MongoDB ObjectId)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Point info",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DefaultPoint" } } }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "404": {
+            "description": "Point not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PointNotFoundError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Points"],
+        "summary": "Delete point",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the point to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Point deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DeleteResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "404": {
+            "description": "Point not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PointNotFoundError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      }
+    },
+    "/routes": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get all routes",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [ { "description": "Not implemented yet" } ],
+        "responses": {
+          "200": {
+            "description": "List of routes was successfully received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Route" }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Routes"],
+        "summary": "Add route",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [ { "description": "Not implemented yet" } ]        
+      },
+      "delete": {
+        "tags": ["Routes"],
+        "summary": "Delete route",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [ { "description": "Not implemented yet" } ] 
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT access token. Use the format: 'Bearer <your_token>'"
+      }
+    },
+    "schemas": {      
+      "RegistrationRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "name": {"type": "string", "description": "User's name", "example": "NASA Pathfinder"},
+          "email": { "type": "string", "format": "email", "example": "pathfinder@example.com" },
+          "password": { "type": "string", "format": "password", "example": "Artemis" }
+        }
+      },
+      "RegistrationResponse": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string", "description": "User's name" },
+          "email": { "type": "string", "format": "email" },
+          "accessToken": { "type": "string", "description": "JWT access-токен" }
+        },
+        "example": {
+          "name": "NASA Pathfinder",
+          "email": "pathfinder@example.com",          
+          "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTA2NjY2ZWY5YWU5MDg2OGZmOWRmZCIsImlhdCI6MTc0Mjc1OTUyNiwiZXhwIjoxNzQyNzcwMzI2fQ.nAzq_04nT_GKt477a__mZAcp9fHE9wmWTrvAnojGqEc" 
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "pathfinder@example.com" },
+          "password": { "type": "string", "format": "password", "example": "Artemis" }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string", "description": "JWT access-токен" }
+        },
+        "example": {        
+          "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTA2NjY2ZWY5YWU5MDg2OGZmOWRmZCIsImlhdCI6MTc0Mjc1OTUyNiwiZXhwIjoxNzQyNzcwMzI2fQ.nAzq_04nT_GKt477a__mZAcp9fHE9wmWTrvAnojGqEc" 
+        }
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "example": "User successfully logout" }
+        }
+      },
+      "UserInfo": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "641e5df1f79d1c0012345678" },
+          "name": { "type": "string", "example": "NASA Pathfinder" },
+          "email": { "type": "string", "example": "pathfinder@example.com" },
+          "avatarURL": { "type": "string", "example": "https://res.cloudinary.com/dzdi0fyvw/image/upload/v1680523142/avatars/642aabed33c045223f516bd0_user_avatar.png" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Point": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "641e5df1f79d1c0098765432" },
+          "title": { "type": "string", "example": "Brandenburg Gate" },
+          "description": { "type": "string", "example": "Historic gate in Berlin." },
+          "img": {"type": "string", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQA..." },
+          "coordinates": { 
+                "type": "array", 
+                "items": { "type": "number" },
+                "example": [13.377719720581723, 52.51628189063186],
+                "description": "Coordinates in [longitude, latitude] GeoJSON format."
+              },
+          "owner": { "type": "string", "example": "641e5df1f79d1c0012345678", "description": "ID owner." },
+          "isPublic": {"type": "boolean", "example": true, "default": false, "description": "Optional for point sharing."},
+          "type": { "type": "string", "enum": ["Point"], "example": "Point" },
+          "rating": { "type": "number", "minimum": 0, "maximum": 5,"example": 4.2, "description": "Average rating from 0 to 5." },
+          "feedbacks": {
+            "type": "array",
+            "description": "List of feedback entries (for future extension).",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": { "type": "string" },
+                "user": { "type": "string" },
+                "userName": { "type": "string" },
+                "comment": { "type": "string" }
+              }
+            },
+            "example": [
+              {
+                "_id": "67d22545d881613e459bb671",
+                "user": "641e5df1f79d1c0012345678",
+                "userName": "NASA Pathfinder",                
+                "comment": "Amazing place to visit!"
+              }
+            ]
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AddPointRequest": {
+        "type": "object",
+        "required": ["title", "coordinates"],
+        "properties": {
+          "title": { "type": "string", "example": "Brandenburg Gate" },
+          "description": { "type": "string", "example": "Historic gate in Berlin." },
+          "img": {"type": "string", "example": "" },
+          "coordinates": {
+            "type": "array",
+            "items": { "type": "number" },
+            "example": [13.377719720581723, 52.51628189063186],
+            "description": "Point coordinates [longitude, latitude]"
+          }
+        }
+      },
+      "UpdatePointRequest": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string", "example": "67e1efcd2fa308b99301f389", "description": "The unique point ID to update." },
+          "title": { "type": "string", "example": "Brandenburg Gate", "description": "Optional new title." },
+          "description": { "type": "string", "example": "Historic gate in Berlin.", "description": "Optional new description." },
+          "img": {"type": "string", "example": "" },
+          "coordinates": {
+            "type": "array",
+            "items": { "type": "number" },
+            "example": [13.377719720581723, 52.51628189063186],
+            "description": "Optional new coords [lon, lat]."
+          }
+        }
+      },      
+      "PointResponse": {
+        "type": "object",
+        "properties": {
+          "points": { "type": "string", "example": "Point added" }
+        }
+      },
+      "UpdatedPointResponse": {
+        "type": "object",
+        "properties": {
+          "points": { "type": "string", "example": "Point successfully updated" }
+        }
+      },
+      "DefaultPoint": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "67e33727a55ae06b056ea377" },
+          "title": { "type": "string", "example": "Brandenburg Gate" },
+          "description": { "type": "string", "example": "Historic gate in Berlin." },
+          "img": {"type": "string", "example": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQA..." },
+          "coordinates": { 
+                "type": "array", 
+                "items": { "type": "number" },
+                "example": [13.377719720581723, 52.51628189063186],
+                "description": "Coordinates in [longitude, latitude] GeoJSON format."
+              },
+          "owner": { "type": "string", "example": "641e5df1f79d1c0012345678", "description": "ID owner." },
+          "isPublic": {"type": "boolean", "example": false, "default": false, "description": "Optional for point sharing."},
+          "type": { "type": "string", "enum": ["Point"], "example": "Point" },
+          "rating": { "type": "number", "minimum": 0, "maximum": 5,"example": "", "description": "Average rating from 0 to 5." },
+          "feedbacks": { "type": "array", "description": "List of feedback entries (for future extension).", "example": "[]" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DeleteResponse": {
+        "type": "object",
+        "properties": {
+          "points": { "type": "string", "example": "Point deleted successfully" }
+        }
+      },
+      "Route": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Pathfinder_Mission_1" },
+          "routeType": { 
+            "type": "string", 
+            "enum": ["traffic", "driving", "walking", "cycling"], 
+            "example": "driving" 
+          },
+          "isShared": { "type": "boolean", "default": false },
+          "rating": { "type": "number", "example": 4.5 },
+          "geometry": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "example": "Feature" },
+              "geometry": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "example": "LineString" },
+                  "coordinates": {
+                    "type": "array",
+                    "items": { "type": "array", "items": { "type": "number" } },
+                    "example": [
+                      [13.31574, 52.51147],
+                      [13.31646, 52.51084],
+                      "... more coords ..."
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },     
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "Email and password are required" }
+        }
+      },
+      "RegisterError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "Email pathfinder@example.com is already in use" }
+        }
+      },
+      "LoginError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "Email or password is wrong" }
+        }
+      },
+      "AuthError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "Unauthorized" }
+        }
+      },
+      "ServerError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "Server error" }
+        }
+      },
+      "RefreshError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "No refresh token provided" }
+        }
+      },
+      "InvalidPointDataError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "\"title\" is required" },
+          "message2": { "type": "string",  "example": "\"coordinates\" must contain 2 items" }
+        }
+      },
+      "PointNotFoundError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "Point not found" }
+        }
+      },
+      "NoIdProvidedError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "No id provided" }
+        }
+      }        
+    }
+  }
+}

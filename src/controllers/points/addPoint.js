@@ -32,7 +32,7 @@ async function addPoint(req, res, next) {
             coordinates,
             owner: req.user._id,
         });
-        res.status(200).json({ points: 'addPoints' });
+        res.status(200).json({ points: 'Point added' });
     } catch (error) {
         next(error);
     }

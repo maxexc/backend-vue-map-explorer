@@ -48,6 +48,14 @@ const updatePointSchema = Joi.object({
         .items(Joi.number().min(-180).max(180))
         .length(2)
         .optional(),
+    rating: Joi.number().min(0).max(5).optional(),
+    feedbacks: Joi.array()
+        .items(Joi.object({
+            user: Joi.string().required(),
+            userName: Joi.string().required(),
+            comment: Joi.string().required()
+        }))
+        .optional(),
 });
 
 module.exports = {

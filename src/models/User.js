@@ -19,33 +19,3 @@ const userSchema = new Schema(
 );
 
 module.exports = model('User', userSchema);
-
-
-
-
-
-// // models/User.js
-// const { Schema, model } = require('mongoose');
-
-// // Простейшая схема
-// const userSchema = new Schema({
-//     name: { type: String, required: true },
-//     email: { type: String, required: true },
-//     age: { type: Number, default: 0 },
-//     hobbies: { type: [String], default: [] },
-//     createdAt: {
-//         type: Date,
-//         default: Date.now
-//     }
-//     // можно добавить поля по желанию
-// }, {
-//     versionKey: false // <-- отключаем __v
-//     // вторая опция: timestamps: true (если хотим, чтобы Mongoose сам добавлял createdAt/updatedAt)
-//     // timestamps: true
-// });
-
-// // "User" => в базе будет коллекция "users"
-// module.exports = model('User', userSchema);
-
-// // Важно: Mongoose автоматически возьмёт имя User, сделает в нижнем регистре + s, то есть «users» — совпадёт с тем, что у вас есть.
-
