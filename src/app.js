@@ -20,7 +20,8 @@ app.use(cors({
   credentials: true          // for cookies to be sent
 }));
 
-app.use(express.json());
+// app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increasing the limit
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
