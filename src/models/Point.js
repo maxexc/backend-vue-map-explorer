@@ -34,4 +34,6 @@ const pointSchema = new Schema(
     }
 );
 
+pointSchema.index({ coordinates: '2dsphere' });  // geo-index
+
 module.exports = model('Point', pointSchema);

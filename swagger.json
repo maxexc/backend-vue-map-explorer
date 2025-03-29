@@ -377,7 +377,50 @@
         "tags": ["Routes"],
         "summary": "Add route",
         "security": [ { "bearerAuth": [] } ],
-        "parameters": [ { "description": "Not implemented yet" } ]        
+        "description": "Creates a new route with geometry (LineString) and multiple points (FeatureCollection). Authentication required.",
+        "requestBody": {
+          "required": true,
+          "description": "Route creation payload",
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddRouteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Route created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Route" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (invalid route data)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RouteBadRequest" }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthError" }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ServerError" }
+              }
+            }
+          }
+        }      
       },
       "delete": {
         "tags": ["Routes"],
@@ -569,7 +612,9 @@
       "Route": {
         "type": "object",
         "properties": {
+          "_id": { "type": "string", "example": "67e717e1e015ac29bc8fefce" },
           "name": { "type": "string", "example": "Pathfinder_Mission_1" },
+          "owner": {"type": "string", "example": "641e5df1f79d1c0012345678" },
           "routeType": { 
             "type": "string", 
             "enum": ["traffic", "driving", "walking", "cycling"], 
@@ -577,29 +622,87 @@
           },
           "isShared": { "type": "boolean", "default": false },
           "rating": { "type": "number", "example": 4.5 },
+          "type": { "type": "string", "enum": ["Route"], "example": "Route" },
+          "geometry": { "$ref": "#/components/schemas/RouteGeometry" },
+          "points": { "$ref": "#/components/schemas/RoutePoints" }
+        }
+      },
+      "AddRouteRequest": {
+        "type": "object",
+        "required": ["name", "geometry", "points"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Pathfinder_Mission_1"
+          },
+          "routeType": {
+            "type": "string",
+            "enum": ["traffic", "driving", "walking", "cycling"],
+            "example": "driving"
+          },
+          "geometry": { "$ref": "#/components/schemas/RouteGeometry" },
+          "points": { "$ref": "#/components/schemas/RoutePoints" }
+        }
+      },
+      "RouteGeometry": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["Feature"], "example": "Feature" },
           "geometry": {
             "type": "object",
             "properties": {
-              "type": { "type": "string", "example": "Feature" },
-              "geometry": {
-                "type": "object",
-                "properties": {
-                  "type": { "type": "string", "example": "LineString" },
-                  "coordinates": {
-                    "type": "array",
-                    "items": { "type": "array", "items": { "type": "number" } },
-                    "example": [
-                      [13.31574, 52.51147],
-                      [13.31646, 52.51084],
-                      "... more coords ..."
-                    ]
-                  }
-                }
+              "type": { "type": "string", "enum": ["LineString"], "example": "LineString" },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": { "type": "number" }
+                },
+                "example": [
+                  [13.31574, 52.51147],
+                  [13.31646, 52.51084]
+                ]
               }
             }
           }
         }
-      },     
+      },
+      "RoutePoints": {
+        "type": "object",
+        "example": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [13.31574, 52.51147]
+              },
+              "properties": {
+                "name": "A",
+                "icon": "default",
+                "rating": 0,
+                "private": false,
+                "reviews": []
+              }
+            },
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [13.41666, 52.51951]
+              },
+              "properties": {
+                "name": "B",
+                "icon": "default",
+                "rating": 0,
+                "private": false,
+                "reviews": []
+              }
+            }
+          ]        
+        }
+      },    
       "ValidationError": {
         "type": "object",
         "properties": {
@@ -653,6 +756,13 @@
         "type": "object",
         "properties": {
           "message": { "type": "string",  "example": "No id provided" }
+        }
+      },
+      "RouteBadRequest": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "\"points.features\" must contain at least 2 items" },
+          "message2": { "type": "string",  "example": "other errors" }
         }
       }        
     }
