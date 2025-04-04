@@ -1,14 +1,21 @@
 const express = require('express');
-const router = express.Router();
-
 const { addRoute } = require('../controllers/routes/addRoute.js');
+const { getRoutes } = require('../controllers/routes/getRoutes.js');
+const { deleteRoute } = require('../controllers/routes/deleteRoute.js');
+
 const { authenticate } = require('../middlewares/authenticate.js');
 const { validateBody } = require('../middlewares/validateBody.js');
 const { createRouteSchema, updateRouteSchema } = require('../schemas/routesSchemas.js');
 
+const router = express.Router();
+
+router.get('/', authenticate, getRoutes);
+
 router.post('/', authenticate, validateBody(createRouteSchema), addRoute);
 
 // TO DO
-// router.put('/', authenticate, validateBody(updateRouteSchema), updateRoute);
+// router.put('/:id', authenticate, validateBody(updateRouteSchema), updateRoute);
+
+router.delete('/:id', authenticate, deleteRoute);
 
 module.exports = router;
