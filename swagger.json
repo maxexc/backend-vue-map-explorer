@@ -349,8 +349,7 @@
       "get": {
         "tags": ["Routes"],
         "summary": "Get all routes",
-        "security": [ { "bearerAuth": [] } ],
-        "parameters": [ { "description": "Not implemented yet" } ],
+        "security": [ { "bearerAuth": [] } ],        
         "responses": {
           "200": {
             "description": "List of routes was successfully received",
@@ -421,12 +420,44 @@
             }
           }
         }      
-      },
+      }      
+    },
+    "/routes/{id}": {
       "delete": {
         "tags": ["Routes"],
         "summary": "Delete route",
         "security": [ { "bearerAuth": [] } ],
-        "parameters": [ { "description": "Not implemented yet" } ] 
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "ID of the route to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Route deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RouteDeleteResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "404": {
+            "description": "Route not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RouteNotFoundError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
       }
     }
   },
@@ -764,7 +795,19 @@
           "message": { "type": "string",  "example": "\"points.features\" must contain at least 2 items" },
           "message2": { "type": "string",  "example": "other errors" }
         }
-      }        
+      },
+      "RouteDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "points": { "type": "string", "example": "Route deleted successfully" }
+        }
+      },
+      "RouteNotFoundError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "Route not found" }
+        }
+      }      
     }
   }
 }
