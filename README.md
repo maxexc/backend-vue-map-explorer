@@ -27,7 +27,7 @@ migrate to TypeScript in the future.
 This project includes **Swagger** for API documentation. After starting the
 server, you can access Swagger UI at:
 
-- **Open API (Swagger) on Render:**:
+- **Open API (Swagger) on Render:**
   [https://backend-vue-map-explorer.onrender.com/api-docs](https://backend-vue-map-explorer.onrender.com/api-docs)
   ✔
 
@@ -110,9 +110,9 @@ project.
 
 1. **Clone the Repository:**
 
-   ```bash
+```bash
    git clone https://github.com/maxexc/backend-vue-map-explorer.git
-   ```
+```
 
 2. **Install Dependencies:**
 
