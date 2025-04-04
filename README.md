@@ -22,21 +22,23 @@ migrate to TypeScript in the future.
 
 ---
 
-## Swagger API Documentation
+## Swagger API Documentation - Open API
 
-This project includes Swagger for API documentation. After starting the server,
-you can access Swagger UI at:
+This project includes **Swagger** for API documentation. After starting the
+server, you can access Swagger UI at:
 
-Local: http://localhost:3001/api-docs
+- **Open API (Swagger) on Render:**:
+  [https://backend-vue-map-explorer.onrender.com/api-docs](https://backend-vue-map-explorer.onrender.com/api-docs)
+  ✔
 
-Production (Render): https://backend-vue-map-explorer.onrender.com/api-docs ✔
+- **Production Server (Render):**
+  [https://backend-vue-map-explorer.onrender.com](https://backend-vue-map-explorer.onrender.com)
+  🌍
 
-Server (Render): https://backend-vue-map-explorer.onrender.com 🌍
-
-All endpoints are described in `swagger.json`, covering **User, Points,
-Routes,** and more. You can test requests directly in the browser using the “Try
-it out” button, but note that you must provide a valid **Bearer token** for
-protected routes.
+All endpoints are described in [`swagger.json`](./swagger.json), covering
+**User, Points, Routes,** and more. You can test requests directly in the
+browser using the “Try it out” button, but note that you must provide a valid
+**Bearer token** for protected routes.
 
 **Important**: If you’re dealing with very large data (e.g. tens of thousands of
 coordinates), Swagger UI may lag while rendering the JSON response. In such
