@@ -423,6 +423,42 @@
       }      
     },
     "/routes/{id}": {
+      "get": {
+        "tags": ["Routes"],
+        "summary": "Get route by ID",
+        "security": [ { "bearerAuth": [] } ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Route ID (MongoDB ObjectId)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Route info",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Route" } } }
+          },
+          "401": {
+            "description": "Not authorized (invalid access token)",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },
+          "403": {
+            "description": "Access denied. Non-owner",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ForbiddenError" } } }
+          },
+          "404": {
+            "description": "Route not found",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RouteNotFoundError" } } }
+          },
+          "500": {
+            "description": "Server error",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ServerError" } } }
+          }
+        }
+      },
       "delete": {
         "tags": ["Routes"],
         "summary": "Delete route",
@@ -807,7 +843,13 @@
         "properties": {
           "message": { "type": "string",  "example": "Route not found" }
         }
-      }      
+      },
+      "ForbiddenError": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string",  "example": "Access denied. Non-owner" }
+        }
+      }     
     }
   }
 }
