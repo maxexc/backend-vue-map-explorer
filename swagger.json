@@ -297,6 +297,10 @@
           "401": {
             "description": "Not authorized (invalid access token)",
             "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthError" } } }
+          },          
+          "403": {
+            "description": "Access denied. Non-owner",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ForbiddenError" } } }
           },
           "404": {
             "description": "Point not found",
